@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Химия: ҰБТ Теория Тест</title>
+    <style>
+        /* Базовые стили и сброс */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f0f4f8;
+            color: #334e68;
+            line-height: 1.6;
+        }
+
+        /* Навигация и шапка */
+        header {
+            background-color: #102a43;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .menu-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .menu-btn:hover { color: #486581; }
+        .header-title { font-size: 1.2rem; font-weight: 600; white-space: nowrap; }
+        
+        .top-nav {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .top-nav::-webkit-scrollbar { display: none; }
+        .top-nav button {
+            background: #243b53;
+            color: #bcccdc;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .top-nav button:hover, .top-nav button.active {
+            background: #3e8ed0;
+            color: white;
+        }
+
+        /* Боковое меню */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -300px;
+            width: 280px;
+            height: 100%;
+            background: #ffffff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            transition: left 0.3s ease;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar.open { left: 0; }
+        .sidebar-header {
+            background: #102a43;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .close-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        .sidebar-menu { padding: 10px 0; overflow-y: auto; flex-grow: 1; }
+        .sidebar-menu button {
+            width: 100%;
+            text-align: left;
+            padding: 15px 20px;
+            background: none;
+            border: none;
+            border-bottom: 1px solid #e2e8f0;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #334e68;
+            transition: background 0.2s;
+        }
+        .sidebar-menu button:hover, .sidebar-menu button.active {
+            background: #f0f4f8;
+            color: #3e8ed0;
+            font-weight: 600;
+        }
+        .reset-container { padding: 20px; border-top: 1px solid #e2e8f0; }
+        .reset-btn {
+            width: 100%;
+            padding: 12px;
+            background: #d64545;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .reset-btn:hover { background: #ba2525; }
+
+        /* Оверлей для закрытия меню */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            z-index: 150;
+            display: none;
+        }
+        .overlay.open { display: block; }
+
+        /* Основной контент */
+        main {
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        .section-title {
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            color: #102a43;
+            border-bottom: 2px solid #3e8ed0;
+            padding-bottom: 10px;
+        }
+
+        /* Карточка вопроса */
+        .question-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .q-number { font-weight: bold; color: #3e8ed0; margin-right: 5px; }
+        .question-text { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; }
+        
+        .options-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .option-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .option-item:hover:not(.disabled) { background-color: #f8fafc; }
+        .option-item input { margin-right: 15px; transform: scale(1.2); cursor: pointer; }
+        .option-item label { flex-grow: 1; cursor: pointer; }
+        
+        /* Состояния вариантов ответа */
+        .disabled { pointer-events: none; opacity: 0.8; }
+        .correct-answer { background-color: #d1fae5; border-color: #34d399; }
+        .wrong-answer { background-color: #fee2e2; border-color: #f87171; }
+        .missed-answer { background-color: #fef3c7; border-color: #fbbf24; }
+
+        .submit-multi-btn {
+            margin-top: 15px;
+            background: #3e8ed0;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .submit-multi-btn:hover { background: #2c7a7b; }
+        .submit-multi-btn:disabled { background: #9fb3c8; cursor: not-allowed; }
+
+        /* Итоги */
+        .results-block {
+            background: #102a43;
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 40px;
+            margin-bottom: 50px;
+        }
+        .results-block h3 { margin-bottom: 15px; font-size: 1.5rem; }
+        .score { font-size: 2rem; font-weight: bold; color: #4ade80; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+        <div class="header-title">Химия Тесттері</div>
+        <div class="top-nav" id="top-nav">
+            </div>
+    </header>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>Разделы</h3>
+            <button class="close-btn" onclick="toggleSidebar()">×</button>
+        </div>
+        <div class="sidebar-menu" id="sidebar-menu">
+            </div>
+        <div class="reset-container">
+            <button class="reset-btn" onclick="resetProgress()">Сбросить прогресс</button>
+        </div>
+    </div>
+    <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+    <main>
+        <h1 class="section-title" id="section-title">Выберите раздел</h1>
+        <div id="questions-container">
+            </div>
+        <div id="results-container"></div>
+    </main>
+
+    <script>
+        // БАЗА ДАННЫХ ВОПРОСОВ (Внеси сюда остальные вопросы по аналогии)
+        const quizData = {
+            "Альдегидтер мен кетондар": [
+                {
+                    id: 1,
+                    text: "Альдегидтердің функционалдық тобы",
+                    options: { "A": "NH2", "B": "– ОН", "C": "– СОН", "D": "–NО2", "E": "–СООН" },
+                    correct: ["C"] // Одиночный выбор
+                },
+                {
+                    id: 2,
+                    text: "Карбонилді қосылыстар",
+                    options: { "A": "спирттер", "B": "альдегидтер", "C": "фенолдар", "D": "кетондар", "E": "жай эфирлер", "F": "арендер" },
+                    correct: ["B", "D"] // Множественный выбор (чекбоксы и кнопка Ответить)
+                },
+                {
+                    id: 3,
+                    text: "Альдегидтердің изомерленуі",
+                    options: { "A": "класаралық", "B": "карбонил топтың орны бойынша", "C": "геометриялық", "D": "көміртек қаңқасының құрылысына", "E": "оптикалық" },
+                    correct: ["A", "D"]
+                },
+                {
+                    id: 4,
+                    text: "Альдегид",
+                    options: { "A": "метаналь", "B": "диметилкетон", "C": "формальдегид", "D": "СН3 –СО–СН3", "E": "ацетон", "F": "СН3СОН" },
+                    correct: ["A", "C", "F"]
+                },
+                {
+                    id: 5,
+                    text: "Кетон",
+                    options: { "A": "метилэтилкетон", "B": "этаналь", "C": "СН3 –СО–СН3", "D": "СН3СН2СОН", "E": "бутанон", "F": "ацетальдегид" },
+                    correct: ["A", "C", "E"]
+                }
+            ],
+            "Карбон қышқылы": [
+                {
+                    id: 1,
+                    text: "Карбон қышқылдары жіктеледі",
+                    options: { "A": "көмірсутек радикалы табиғатына", "B": "карбоксил топтың құрылысына", "C": "көмірсутек радикалының түріне", "D": "карбоксил тобының санына", "E": "карбоксил топтың орналасуына" },
+                    correct: ["A", "D"]
+                },
+                {
+                    id: 2,
+                    text: "Карбоксил тобы –СООН қандай топтардан тұрады",
+                    options: { "A": "амин", "B": "гидроксил", "C": "альдегид", "D": "қышқыл", "E": "карбонил", "F": "радикал" },
+                    correct: ["B", "E"]
+                },
+                {
+                    id: 3,
+                    text: "Карбоксил тобы байланысқан радикалдың табиғатына байланысты карбон қышқылдары жіктеледі.",
+                    options: { "A": "қаныққан", "B": "бірнегізді", "C": "қанықпаған", "D": "көпнегізді", "E": "ароматты", "F": "қарапайым" },
+                    correct: ["A", "C", "E"]
+                }
+            ],
+            "Күрделі эфирлер, майлар": [
+                {
+                    id: 1,
+                    text: "Күрделі эфирлердің жалпы формуласы",
+                    options: { "A": "RCOOR1", "B": "ROR1", "C": "R –OH", "D": "NH2–R – COOH", "E": "R – NH2" },
+                    correct: ["A"]
+                }
+            ],
+            "Көмірсулар": [
+                 {
+                    id: 1,
+                    text: "Глюкозаның функционалдық топтары",
+                    options: { "A": "-СОH, -ОН", "B": "-СООН, -С═О", "C": "-СООН, -ОН", "D": "-С═О, - NH2", "E": "-ОН, - NH2" },
+                    correct: ["A"]
+                }
+            ]
+        };
+
+        let currentSection = "";
+        let progress = JSON.parse(localStorage.getItem('chemProgress')) || {};
+
+        // Инициализация
+        function init() {
+            renderNav();
+            const sections = Object.keys(quizData);
+            if(sections.length > 0) {
+                loadSection(sections[0]);
+            }
+        }
+
+        // Отрисовка навигации (верхняя панель и боковое меню)
+        function renderNav() {
+            const topNav = document.getElementById('top-nav');
+            const sidebarMenu = document.getElementById('sidebar-menu');
+            topNav.innerHTML = '';
+            sidebarMenu.innerHTML = '';
+
+            Object.keys(quizData).forEach(section => {
+                // Top Nav Button
+                const btnTop = document.createElement('button');
+                btnTop.textContent = section;
+                btnTop.onclick = () => loadSection(section);
+                topNav.appendChild(btnTop);
+
+                // Sidebar Button
+                const btnSide = document.createElement('button');
+                btnSide.textContent = section;
+                btnSide.onclick = () => {
+                    loadSection(section);
+                    toggleSidebar();
+                };
+                sidebarMenu.appendChild(btnSide);
+            });
+        }
+
+        // Загрузка выбранного раздела
+        function loadSection(section) {
+            currentSection = section;
+            document.getElementById('section-title').textContent = section;
+            
+            // Обновляем активные классы в меню
+            document.querySelectorAll('.top-nav button, .sidebar-menu button').forEach(btn => {
+                btn.classList.remove('active');
+                if(btn.textContent === section) btn.classList.add('active');
+            });
+
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+            
+            if (!progress[section]) progress[section] = {};
+
+            quizData[section].forEach((q, index) => {
+                const isMulti = q.correct.length > 1;
+                const answeredData = progress[section][q.id];
+                const isAnswered = !!answeredData;
+
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                
+                let html = `<div class="question-text"><span class="q-number">${index + 1}.</span> ${q.text}</div>`;
+                html += `<div class="options-list" id="opts-${q.id}">`;
+
+                for (const [key, val] of Object.entries(q.options)) {
+                    const inputType = isMulti ? 'checkbox' : 'radio';
+                    const name = `q_${q.id}`;
+                    const id = `q_${q.id}_${key}`;
+                    
+                    let itemClass = 'option-item';
+                    let checkedStr = '';
+                    
+                    // Восстановление состояния если отвечено
+                    if (isAnswered) {
+                        itemClass += ' disabled';
+                        if (answeredData.selected.includes(key)) checkedStr = 'checked';
+                        
+                        // Логика подсветки
+                        if (q.correct.includes(key) && answeredData.selected.includes(key)) {
+                            itemClass += ' correct-answer';
+                        } else if (!q.correct.includes(key) && answeredData.selected.includes(key)) {
+                            itemClass += ' wrong-answer';
+                        } else if (q.correct.includes(key) && !answeredData.selected.includes(key)) {
+                            itemClass += ' missed-answer'; // Желтый/зеленый для пропущенных правильных (только мульти)
+                        }
+                    }
+
+                    html += `
+                        <div class="${itemClass}" id="wrap_${id}">
+                            <input type="${inputType}" name="${name}" id="${id}" value="${key}" ${checkedStr} ${isAnswered ? 'disabled' : ''} 
+                            ${!isMulti && !isAnswered ? `onchange="checkSingle(${q.id}, '${key}')"` : ''}>
+                            <label for="${id}"><b>${key})</b> ${val}</label>
+                        </div>
+                    `;
+                }
+                html += `</div>`;
+
+                // Кнопка ответить для мультивыбора
+                if (isMulti) {
+                    html += `<button class="submit-multi-btn" id="btn_${q.id}" onclick="checkMulti(${q.id})" ${isAnswered ? 'disabled style="display:none;"' : ''}>Ответить</button>`;
+                }
+
+                card.innerHTML = html;
+                container.appendChild(card);
+            });
+
+            updateResultsPanel();
+        }
+
+        // Проверка одиночного выбора (Radio)
+        function checkSingle(qId, selectedKey) {
+            const q = quizData[currentSection].find(item => item.id === qId);
+            const isCorrect = q.correct.includes(selectedKey);
+            
+            progress[currentSection][qId] = {
+                correct: isCorrect,
+                selected: [selectedKey]
+            };
+            saveProgress();
+
+            // Блокируем и красим
+            const inputs = document.getElementsByName(`q_${qId}`);
+            inputs.forEach(input => {
+                input.disabled = true;
+                const wrapper = document.getElementById(`wrap_${input.id}`);
+                wrapper.classList.add('disabled');
+                
+                if (input.value === q.correct[0]) {
+                    wrapper.classList.add('correct-answer');
+                } else if (input.value === selectedKey) {
+                    wrapper.classList.add('wrong-answer');
+                }
+            });
+
+            updateResultsPanel();
+        }
+
+        // Проверка множественного выбора (Checkbox)
+        function checkMulti(qId) {
+            const q = quizData[currentSection].find(item => item.id === qId);
+            const checkboxes = document.getElementsByName(`q_${qId}`);
+            
+            const selected = [];
+            checkboxes.forEach(cb => { if(cb.checked) selected.push(cb.value); });
+
+            if (selected.length === 0) {
+                alert("Выберите хотя бы один вариант ответа!");
+                return;
+            }
+
+            // Проверка правильности (совпадение массивов)
+            const sortedSelected = [...selected].sort();
+            const sortedCorrect = [...q.correct].sort();
+            const isCorrect = JSON.stringify(sortedSelected) === JSON.stringify(sortedCorrect);
+
+            progress[currentSection][qId] = {
+                correct: isCorrect,
+                selected: selected
+            };
+            saveProgress();
+
+            // Блокируем и красим
+            document.getElementById(`btn_${qId}`).style.display = 'none';
+            checkboxes.forEach(cb => {
+                cb.disabled = true;
+                const wrapper = document.getElementById(`wrap_${cb.id}`);
+                wrapper.classList.add('disabled');
+
+                if (q.correct.includes(cb.value) && selected.includes(cb.value)) {
+                    wrapper.classList.add('correct-answer'); // Угадал правильно
+                } else if (!q.correct.includes(cb.value) && selected.includes(cb.value)) {
+                    wrapper.classList.add('wrong-answer'); // Выбрал лишнее
+                } else if (q.correct.includes(cb.value) && !selected.includes(cb.value)) {
+                    wrapper.classList.add('missed-answer'); // Забыл выбрать правильное
+                }
+            });
+
+            updateResultsPanel();
+        }
+
+        // Сохранение и отображение результатов
+        function saveProgress() {
+            localStorage.setItem('chemProgress', JSON.stringify(progress));
+        }
+
+        function updateResultsPanel() {
+            const totalQuestions = quizData[currentSection].length;
+            const answeredQuestions = Object.keys(progress[currentSection] || {}).length;
+            
+            let correctCount = 0;
+            for (const ans of Object.values(progress[currentSection] || {})) {
+                if (ans.correct) correctCount++;
+            }
+
+            const resultsContainer = document.getElementById('results-container');
+            
+            if (answeredQuestions > 0) {
+                resultsContainer.innerHTML = `
+                    <div class="results-block">
+                        <h3>Текущий результат: ${currentSection}</h3>
+                        <p>Отвечено: ${answeredQuestions} из ${totalQuestions}</p>
+                        <div class="score">Правильных: ${correctCount}</div>
+                    </div>
+                `;
+            } else {
+                resultsContainer.innerHTML = '';
+            }
+        }
+
+        // Полный сброс прогресса
+        function resetProgress() {
+            if(confirm("Вы уверены, что хотите сбросить весь прогресс? Это действие необратимо.")) {
+                localStorage.removeItem('chemProgress');
+                progress = {};
+                loadSection(currentSection);
+                toggleSidebar();
+            }
+        }
+
+        // Управление боковым меню
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('open');
+        }
+
+        // Старт
+        window.onload = init;
+    </script>
+</body>
+</html>
