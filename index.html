@@ -210,6 +210,19 @@
             word-break: break-word;
         }
 
+        /* Картинка вопроса */
+        .question-image {
+            margin: 15px 0;
+        }
+
+        .question-image img {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 10px;
+            display: block;
+            object-fit: cover;
+        }
+
         /* Карточка вопроса */
         .question-card {
             background: white;
@@ -425,8 +438,9 @@
     </main>
 
     <script>
-        // Вставь сюда свои разделы и вопросы
-        const quizData = {
+        // Вопросы и разделы
+        // image берётся только из репозитория, например: "./images/q1.png" или "images/q1.png"
+                const quizData = {
   "Сабақ 1: Алғашқы химиялық ұғымдар": [
     {
       "id": 1,
@@ -4958,7 +4972,7 @@
 
             quizData[section].forEach((q, index) => {
                 const optionCount = Object.keys(q.options).length;
-                const isMulti = optionCount > 5; // A-E = одиночный, A-F и дальше = множественный
+                const isMulti = optionCount > 5;
                 const answeredData = progress[section][q.id];
                 const isAnswered = !!answeredData;
 
@@ -4966,6 +4980,15 @@
                 card.className = 'question-card';
 
                 let html = `<div class="question-text"><span class="q-number">${index + 1}.</span> ${q.text}</div>`;
+
+                if (q.image) {
+                    html += `
+                        <div class="question-image">
+                            <img src="${q.image}" alt="Изображение к вопросу">
+                        </div>
+                    `;
+                }
+
                 html += `<div class="options-list" id="opts-${q.id}">`;
 
                 for (const [key, val] of Object.entries(q.options)) {
